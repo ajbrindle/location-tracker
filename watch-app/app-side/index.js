@@ -1,6 +1,6 @@
 import { BaseSideService } from '@zeppos/zml/base-side'
 
-const RECEIVER_URL = 'https://www.sk7software.co.uk/location-track/receiver.php'
+const RECEIVER_URL = 'PATH_TO_RECEIVER_PHP';
 var isPaused = false;
 
 AppSideService(
