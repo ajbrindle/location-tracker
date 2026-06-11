@@ -1,6 +1,6 @@
 import { BaseSideService } from '@zeppos/zml/base-side'
+import { RECEIVER_URL } from './config'
 
-const RECEIVER_URL = 'PATH_TO_RECEIVER_PHP';
 var isPaused = false;
 
 AppSideService(
@@ -30,8 +30,14 @@ AppSideService(
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload) 
         })
-        .then(response => response.status)
-        .then(status => res(null, { success: true, status: status }))
+        .then(response => {
+          // 1. Tell the phone to actually read the JSON body from the server
+          return response.json() 
+        })
+        .then(data => {
+          // 2. Forward the server's exact JSON payload back to the watch
+          res(null, data)
+        })
         .catch(error => res(null, { success: false, error: error.message }));
 
         // Start the 1-minute watchdog

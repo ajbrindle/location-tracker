@@ -82,7 +82,7 @@ define('DB_NAME', 'your_db_name');
 ```
 
 ### 3. Deployment
-Upload the contents of the `/server` directory to your web host. Ensure your Zepp OS watch app is configured to point to the correct URL for `receiver.php` to accept incoming telemetry payloads.
+Upload the contents of the `/server` directory to your web host. Ensure the Zepp OS watch app is configured to point to the correct URL for `receiver.php` to accept incoming telemetry payloads. This should be exported as a constant RECEIVER_URL in a file called config.js in the app-side directory.
 
 ---
 

@@ -34,9 +34,22 @@ try {
     switch ($event) {
         
         case 'workout_started':
-            // Pass the explicitly formatted string directly to the database
-            $stmt = $pdo->prepare("INSERT IGNORE INTO WORKOUTS (workout_id, start_time, finished_ind) VALUES (?, ?, 0)");
-            $stmt->execute([$workoutId, $formatted_time]);
+            // Check for an active or paused workout created within the last 6 hours
+            $stmt = $pdo->query("SELECT workout_id FROM WORKOUTS WHERE finished_ind != 1 AND start_time >= DATE_SUB(NOW(), INTERVAL 6 HOUR) ORDER BY start_time DESC LIMIT 1");
+            $existing_workout = $stmt->fetch();
+
+            if ($existing_workout) {
+                // 1. Override the watch's generated ID with the existing database ID
+                $workoutId = $existing_workout['workout_id'];
+                
+                // 2. Ensure the state is active (0) in case the app crashed while paused (2)
+                $update_stmt = $pdo->prepare("UPDATE WORKOUTS SET finished_ind = 0 WHERE workout_id = ?");
+                $update_stmt->execute([$workoutId]);
+            } else {
+                // No active recent workout found; create a brand new one
+                $insert_stmt = $pdo->prepare("INSERT IGNORE INTO WORKOUTS (workout_id, start_time, finished_ind) VALUES (?, ?, 0)");
+                $insert_stmt->execute([$workoutId, $formatted_time]);
+            }
             break;
 
         case 'workout_paused':
@@ -82,9 +95,13 @@ try {
             break;
     }
 
+    // Return a 200 OK and pass the finalized workoutId back to the client
     http_response_code(200);
-    echo json_encode(["success" => true, "processed_event" => $event]);
-
+    echo json_encode([
+        "success" => true, 
+        "processed_event" => $event,
+        "active_workout_id" => $workoutId 
+    ]);
 } catch (PDOException $e) {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
