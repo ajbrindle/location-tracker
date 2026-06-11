@@ -39,14 +39,11 @@ DataWidget(
       .then((res) => {
         try {
           const rawResponse = typeof res === 'object' ? JSON.stringify(res) : String(res);
-          console.log('Raw response:', rawResponse);
-
           const data = JSON.parse(rawResponse);
 
           // Apply the ID override if it was successfully found
           if (data && data.active_workout_id) {
               this.workoutId = data.active_workout_id;
-              console.log('ID Overridden to:', this.workoutId);
           }
         } catch (err) {
           console.log('Error processing workout started response:', err);
@@ -133,7 +130,6 @@ DataWidget(
       // The Heartbeat
       this.syncTimer = setInterval(() => {
         if (this.currentLat !== 0 && this.currentLon !== 0 && !this.isPaused && !this.isEnded) {
-           console.log('Sending location update:', this.workoutId, this.currentLat, this.currentLon)
            this.request({
              method: 'POST_LOCATION',
              params: {
