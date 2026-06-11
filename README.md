@@ -88,6 +88,6 @@ Upload the contents of the `/server` directory to your web host. Ensure the Zepp
 
 ## 🚦 Usage Notes
 
-* **Starting a Ride:** Launch the app on the watch. It will immediately acquire a GPS lock and send the `workout_started` payload.
+* **Starting a Ride:** Start a workout on the watch and then swipe up/down until the tracker extension is shown on the screen. It will immediately acquire a GPS lock and send the `workout_started` payload. Remain on this screen in order for the location to continually (every 30 seconds) update. If leaving the screen, return to it to resume.
 * **Pausing/Stopping:** Due to Zepp OS power management, the screen digitizer will sleep. Press the physical watch crown to wake the screen before interacting with the Pause or Stop buttons.
 * **Viewing the Dashboard:** Navigate to `index.php` in any modern web browser. The dashboard defaults to the most recent ride and will auto-refresh every 30 seconds if the ride state is active.
