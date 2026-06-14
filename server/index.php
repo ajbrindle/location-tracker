@@ -178,6 +178,30 @@ try {
             padding-top: 15px;
             border-top: 1px solid #eee;
         }
+        .selector-form .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            max-width: 100%;
+        }
+        .selector-form .controls select {
+            flex: 1;
+        }
+        .selector-form .show-latest-button {
+            display: block;
+            width: 100%;
+            margin-top: 12px;
+            background-color: #f39c12;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .selector-form .show-latest-button:hover {
+            background-color: #d78a0f;
+        }
         select {
             padding: 8px 12px;
             font-size: 1rem;
@@ -232,23 +256,39 @@ try {
                 <?php endif; ?>
             <?php endif; ?>
 
+            <?php
+            // Determine whether the currently displayed workout is the most recent one
+            $show_latest = false;
+            if (!empty($all_workouts) && $workout) {
+                $most_recent_id = $all_workouts[0]['workout_id'];
+                if ($workout['workout_id'] != $most_recent_id) {
+                    $show_latest = true;
+                }
+            }
+            ?>
+
             <div class="selector-form">
                 <form method="GET" action="index.php">
-                    <select name="workout_id">
-                        <?php foreach ($all_workouts as $w): 
-                            // Treat dropdown start times as UTC, then convert
-                            $dt = new DateTime($w['start_time'], $utc_tz);
-                            $dt->setTimezone($london_tz);
-                            $label = $dt->format('D, j M Y - H:i');
-                            
-                            $selected_attr = ($workout && $w['workout_id'] === $workout['workout_id']) ? 'selected' : '';
-                        ?>
-                            <option value="<?php echo htmlspecialchars($w['workout_id']); ?>" <?php echo $selected_attr; ?>>
-                                <?php echo htmlspecialchars($label); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <button type="submit">View Ride</button>
+                    <div class="controls">
+                        <select name="workout_id">
+                            <?php foreach ($all_workouts as $w): 
+                                // Treat dropdown start times as UTC, then convert
+                                $dt = new DateTime($w['start_time'], $utc_tz);
+                                $dt->setTimezone($london_tz);
+                                $label = $dt->format('D, j M Y - H:i');
+                                
+                                $selected_attr = ($workout && $w['workout_id'] === $workout['workout_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?php echo htmlspecialchars($w['workout_id']); ?>" <?php echo $selected_attr; ?>>
+                                    <?php echo htmlspecialchars($label); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="submit">View Ride</button>
+                    </div>
+                    <?php if ($show_latest): ?>
+                        <button type="button" class="show-latest-button" onclick="window.location.href='index.php'">Show Latest</button>
+                    <?php endif; ?>
                 </form>
             </div>
         </div>
