@@ -148,7 +148,7 @@ DataWidget(
            
            this.syncText.setProperty(prop.TEXT, { text: `Last sync: ${hours}:${mins}:${secs}` })
         }
-      }, 30000) 
+      }, 15000) 
     },
 
     handlePause() {
