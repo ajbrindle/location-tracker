@@ -142,7 +142,7 @@ try {
     ?>
         <meta http-equiv="refresh" content="30">
     <?php endif; ?>
-
+    <link rel="manifest" href="manifest.json">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -236,7 +236,6 @@ try {
     </style>
 </head>
 <body>
-
     <?php if (!$workout && empty($all_workouts)): ?>
         <div class="no-data">No workouts found in the database.</div>
     <?php else: ?>

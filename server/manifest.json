@@ -1,0 +1,21 @@
+{
+  "name": "Live Ride Tracker",
+  "short_name": "Tracker",
+  "description": "Live GPS cycling tracker",
+  "start_url": "index.php", 
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#27ae60",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
