@@ -303,9 +303,11 @@ try {
                     return;
                 }
 
-                const routeCoords = rawPoints.map(p => ({
+const routeCoords = rawPoints.map(p => ({
                     lat: parseFloat(p.lat),
-                    lng: parseFloat(p.lon)
+                    lng: parseFloat(p.lon),
+                    // Safely parse the MySQL datetime string across all mobile browsers (Safari fix)
+                    time: new Date(p.point_time.replace(/-/g, '/')).getTime() / 1000
                 }));
 
                 const { Map } = await google.maps.importLibrary("maps");
@@ -316,14 +318,60 @@ try {
                     mapId: 'DEMO_MAP_ID' 
                 });
 
-                const ridePath = new google.maps.Polyline({
-                    path: routeCoords,
-                    geodesic: true,
-                    strokeColor: "#FF0000",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 4,
-                });
-                ridePath.setMap(map);
+                let activeRedPath = [routeCoords[0]]; // Start our first red segment
+
+                for (let i = 1; i < routeCoords.length; i++) {
+                    const prevPoint = routeCoords[i - 1];
+                    const currPoint = routeCoords[i];
+
+                    // Calculate the gap in seconds
+                    const timeDiffSeconds = currPoint.time - prevPoint.time;
+
+                    // If the gap is strictly greater than 2 minutes (120 seconds)
+                    if (timeDiffSeconds > 120) {
+                        
+                        // 1. Draw the continuous red path collected so far
+                        if (activeRedPath.length > 1) {
+                            new google.maps.Polyline({
+                                path: activeRedPath,
+                                geodesic: true,
+                                strokeColor: "#FF0000",
+                                strokeOpacity: 0.8,
+                                strokeWeight: 4,
+                                map: map
+                            });
+                        }
+
+                        // 2. Draw the "jump" as a distinct grey line
+                        new google.maps.Polyline({
+                            path: [prevPoint, currPoint],
+                            geodesic: true,
+                            strokeColor: "#474242", // Grey
+                            strokeOpacity: 0.8,
+                            strokeWeight: 4,
+                            map: map
+                        });
+
+                        // 3. Reset the active path, starting fresh with the current point
+                        activeRedPath = [currPoint];
+                        
+                    } else {
+                        // The gap is normal; add this point to the growing red line
+                        activeRedPath.push(currPoint);
+                    }
+                }
+
+                // After the loop finishes, draw whatever is left in the active red path
+                if (activeRedPath.length > 1) {
+                    new google.maps.Polyline({
+                        path: activeRedPath,
+                        geodesic: true,
+                        strokeColor: "#FF0000",
+                        strokeOpacity: 0.8,
+                        strokeWeight: 4,
+                        map: map
+                    });
+                }
 
                 const startPin = new PinElement({
                     background: '#27ae60',

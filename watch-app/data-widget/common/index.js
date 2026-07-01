@@ -73,19 +73,14 @@ DataWidget(
       })
 
       this.syncText = createWidget(widget.TEXT, {
-        x: 0, y: 240, w: 480, h: 40,
-        color: 0xaaaaaa, text_size: 24, align_h: align.CENTER_H,
+        x: 0, y: 240, w: 480, h: 60,
+        color: 0xaaaaaa, text_size: 36, align_h: align.CENTER_H,
         text: 'Last sync: Never'
       })
 
-      // ----------------------------------------------------
-      // BULLETPROOF BUTTON LAYOUT (100x100px, Shifted to Y: 310)
-      // Swapped Unicode for clean Text labels
-      // ----------------------------------------------------
-      
       // PAUSE BUTTON (Visible by default)
       this.pauseButton = createWidget(widget.BUTTON, {
-        x: 100, y: 310, w: 100, h: 100, radius: 50, 
+        x: 100, y: 330, w: 100, h: 100, radius: 50, 
         normal_color: 0x555555, press_color: 0x333333, // Grey
         text: 'PAUSE', text_size: 22, color: 0xffffff, // Replaced symbol
         click_func: () => this.handlePause()
@@ -93,7 +88,7 @@ DataWidget(
 
       // PLAY BUTTON (Hidden by default, stacked directly under Pause)
       this.playButton = createWidget(widget.BUTTON, {
-        x: 100, y: 310, w: 100, h: 100, radius: 50, 
+        x: 100, y: 330, w: 100, h: 100, radius: 50, 
         normal_color: 0x27ae60, press_color: 0x2ecc71, // Green
         text: 'PLAY', text_size: 24, color: 0xffffff, // Replaced symbol
         click_func: () => this.handleResume()
@@ -102,7 +97,7 @@ DataWidget(
 
       // STOP BUTTON
       this.stopButton = createWidget(widget.BUTTON, {
-        x: 280, y: 310, w: 100, h: 100, radius: 50, 
+        x: 280, y: 330, w: 100, h: 100, radius: 50, 
         normal_color: 0xe74c3c, press_color: 0xc0392b, // Red
         text: 'STOP', text_size: 24, color: 0xffffff, // Replaced symbol
         click_func: () => this.endWorkout()
@@ -139,14 +134,29 @@ DataWidget(
                lat: this.currentLat,
                lon: this.currentLon
              }
-           }).catch(err => console.log('Sync failed:', err))
-           
-           const d = new Date()
-           const hours = String(d.getHours()).padStart(2, '0')
-           const mins = String(d.getMinutes()).padStart(2, '0')
-           const secs = String(d.getSeconds()).padStart(2, '0')
-           
-           this.syncText.setProperty(prop.TEXT, { text: `Last sync: ${hours}:${mins}:${secs}` })
+           })
+           .then(() => {
+               // Sync successful! Turn the text green
+               this.syncText.setProperty(prop.COLOR, 0x27ae60);
+               
+               const d = new Date();
+               const hours = String(d.getHours()).padStart(2, '0');
+               const mins = String(d.getMinutes()).padStart(2, '0');
+               const secs = String(d.getSeconds()).padStart(2, '0');
+               
+               this.syncText.setProperty(prop.TEXT, { text: `Last sync: ${hours}:${mins}:${secs}` });
+
+               // Reset the 60-second "Red Alert" dead man's switch
+               if (this.redTimer) clearTimeout(this.redTimer);
+               this.redTimer = setTimeout(() => {
+                   this.syncText.setProperty(prop.COLOR, 0xe74c3c); // Red
+               }, 60000); 
+           })
+           .catch(err => {
+               console.log('Sync failed:', err);
+               // If the request completely fails immediately, turn it red now
+               this.syncText.setProperty(prop.COLOR, 0xe74c3c); 
+           });
         }
       }, 15000) 
     },
@@ -192,6 +202,7 @@ DataWidget(
       
       if (this.geolocation) this.geolocation.stop()
       if (this.syncTimer) clearInterval(this.syncTimer)
+      if (this.redTimer) clearTimeout(this.redTimer)
 
       this.request({
         method: 'POST_LOCATION',
@@ -202,6 +213,7 @@ DataWidget(
     onDestroy() {
       if (this.geolocation) this.geolocation.stop()
       if (this.syncTimer) clearInterval(this.syncTimer)
+      if (this.redTimer) clearTimeout(this.redTimer)
     }
   })
 )
